@@ -1,9 +1,12 @@
 import psycopg2 as pg2
-import requests
 from sqlalchemy import create_engine
 from helperFunctions.twitchAPI import twitchAPIHeaders, getStreamData
-from helperFunctions.updateTables import createBaseTables, updateBaseTables
+from helperFunctions.updateTables import updateStagingTables, createStagingTables, updateYesterdayTables
 from helperFunctions.secretsManagement import get_secret
+from datetime import datetime, time
+from pytz import timezone
+
+
 
 client_id = get_secret('twitch/client_id')
 client_secret = get_secret('twitch/client_secret')
@@ -16,11 +19,18 @@ engine = create_engine(f'postgresql+psycopg2://postgres:{password}@localhost:543
 
 headers = twitchAPIHeaders(client_id, client_secret)
 
-stream_df = getStreamData(headers, 5000)
+stream_df = getStreamData(headers, 100)
 
 stream_df.to_sql('stream_data_staging', engine, if_exists = 'replace')
 
-# createBaseTables(cur)
-updateBaseTables(cur)
+
+
+now = datetime.utcnow().time()
+# viewership typically bottoms out around 8AM UTC
+# Therefore, we will consider our day starting at 8AM UTC
+if time(7, 55) <= now <= time(8, 5):
+    createStagingTables(cur)
+else:
+    updateStagingTables(cur)
 
 conn.commit()
