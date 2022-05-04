@@ -18,7 +18,7 @@ engine = create_engine(
 
 headers = twitchAPIHeaders(client_id, client_secret)
 
-stream_df = getStreamData(headers, 500)
+stream_df = getStreamData(headers, 200)
 
 stream_df.to_sql('stream_data_staging', engine, if_exists='replace')
 

@@ -32,8 +32,8 @@ def createClient():
 
 def tweetTopGames(cur, count=5):
     client = createClient()
-    topGamesQuery = '''select game_name, watch_time
-                from game_watch_time
+    topGamesQuery = '''select game_name, watch_time_pretty
+                from game_watch_time_table
                 order by watch_time desc
                 limit 5
                 '''
@@ -43,7 +43,7 @@ def tweetTopGames(cur, count=5):
 
     for index, row in df.iterrows():
         name = row['game_name']
-        watch_time = str(int(row['watch_time']))
+        watch_time = row['watch_time_pretty'].replace('.', '')
         add = f'\n{str(index + 1)}. {name}: {watch_time} hours'
         payload += add
     print(payload)
@@ -52,8 +52,8 @@ def tweetTopGames(cur, count=5):
 
 def tweetTopStreamers(cur, count=5):
     client = createClient()
-    topStreamersQuery = '''select user_name, watch_time
-                from streamer_watch_time
+    topStreamersQuery = '''select user_name, watch_time_pretty
+                from streamer_watch_time_table
                 order by watch_time desc
                 limit 5
                 '''
@@ -63,7 +63,7 @@ def tweetTopStreamers(cur, count=5):
 
     for index, row in df.iterrows():
         name = row['user_name']
-        watch_time = str(int(row['watch_time']))
+        watch_time = row['watch_time_pretty'].replace('.', '')
         add = f'\n{str(index + 1)}. {name}: {watch_time} hours'
         payload += add
     client.create_tweet(text=payload)
@@ -71,7 +71,7 @@ def tweetTopStreamers(cur, count=5):
 
 def respondToTweet(cur):
     client = createClient()
-    response = client.search_recent_tweets('@TwitchWatchTime')
+    response = client.search_recent_tweets('@TwitchWatchTime', max_results=100)
     oldTweets = []
     print(response)
 
@@ -86,39 +86,78 @@ def respondToTweet(cur):
     with open('storage/tweets_read.txt', 'a') as filehandle:
         for tweet in response.data:
             hashmap = dict(tweet)
+            print(hashmap)
             print(hashmap['id'])
             print(hashmap['text'])
             if hashmap['id'] not in oldTweets:
-                queryRequest(hashmap['text'], cur)
+                text, game_df, streamer_df = _queryRequest(
+                    hashmap['text'], cur)
+
+                if game_df.shape[0] > 0:
+                    _sendGameRespone(client, text, game_df, hashmap['id'])
+
+                if streamer_df.shape[0] > 0:
+                    _sendStreamerRespone(
+                        client, text, streamer_df, hashmap['id'])
+
+                if game_df.shape[0] == 0 and streamer_df.shape[0] == 0:
+                    payload = f'There were no active games or streamers yesterday with name {text}'
+                    client.create_tweet(
+                        text=payload, in_reply_to_tweet_id=hashmap['id'])
+
                 filehandle.write('%s\n' % hashmap['id'])
 
 
-def queryRequest(text, cur):
+def _queryRequest(text, cur):
     text = text.replace('@TwitchWatchTime', '')
-    text = text.replace(' ', '')
+    text = text.strip()
 
-    gameQuery = f'''select user_name, watch_time
-            from game_streamer_watch_time
+    gameQuery = f'''select user_name, watch_time_pretty
+            from watch_time_table
             where lower(game_name) = lower(\'{text}\')
             order by watch_time desc
-            limit 5
+            limit 5;
             '''
 
-    streamerQuery = f'''select game_name, watch_time
-            from game_streamer_watch_time
+    streamerQuery = f'''select game_name, watch_time_pretty
+            from watch_time_table
             where lower(user_name) = lower(\'{text}\')
             order by watch_time desc
-            limit 5
+            limit 5;
             '''
 
     game_df = pd.read_sql_query(gameQuery, con=cur)
-    stream_df = pd.read_sql_query(streamerQuery, con=cur)
-    print(game_df)
-    print(stream_df)
+    streamer_df = pd.read_sql_query(streamerQuery, con=cur)
+    return text, game_df, streamer_df
 
 
-respondToTweet(cur)
+def _sendGameRespone(client, text, df, id):
 
+    payload = f'The most watched {text} streamers yesterday were:'
+
+    for index, row in df.iterrows():
+        name = row['user_name']
+        watch_time = row['watch_time_pretty'].replace('.', '')
+        add = f'\n{str(index + 1)}. {name}: {watch_time} hours'
+        payload += add
+
+    client.create_tweet(text=payload, in_reply_to_tweet_id=id)
+
+
+def _sendStreamerRespone(client, text, df, id):
+
+    payload = f'{text} streamed the following games yesterday'
+
+    for index, row in df.iterrows():
+        name = row['game_name']
+        watch_time = row['watch_time_pretty'].replace('.', '')
+        add = f'\n{str(index + 1)}. {name}: {watch_time} hours'
+        payload += add
+
+    client.create_tweet(text=payload, in_reply_to_tweet_id=id)
+
+
+tweetTopStreamers(cur)
 # if exact tweet text is in storage file, skip. Otherwise respond
 # call tweetTopStreamers and tweetTopGames
 # query should be either a game or streamer name. If it's a game and streamer name, respond with both
@@ -138,7 +177,7 @@ respondToTweet(cur)
 #     total = 0
 
 #     for index, row in df.iterrows():
-#         total += row['watch_time']
+#         total += row['watch_time_pretty'].replace('.', '')
 #         weights.append((total, row['game_name']))
 
 #     rand = random.randint(0, total)
