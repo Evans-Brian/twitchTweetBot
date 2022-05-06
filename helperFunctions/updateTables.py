@@ -1,4 +1,9 @@
 def createStagingTables(cur):
+    """Deletes previous staging table and creates a new staging table.
+
+    Args:
+        cur (cursor): Cursor connected to the database.
+    """
     cur.execute('drop table if exists watch_time_staging;')
 
     create_watch_time = '''create table watch_time_staging as
@@ -12,6 +17,11 @@ def createStagingTables(cur):
 
 
 def updateStagingTables(cur):
+    """Updates staging table with data from the most recent Twitch API request. Data is appended and then grouped.
+
+    Args:
+        cur (cursor): Cursor connected to the database.
+    """
     insert_watch_time = '''
                 insert into watch_time_staging
                 (select game_id, game_name, user_id, user_name, thumbnail_url, 
@@ -41,6 +51,12 @@ def updateStagingTables(cur):
 
 
 def updateYesterdayTables(cur):
+    """Deletes yesterday's tables, which currently contain data for two days ago. Recreates the tables
+    with data from one day ago.
+
+    Args:
+        cur (cursor): Cursor connected to the database
+    """
     cur.execute('drop table if exists watch_time_table;')
     cur.execute('drop table if exists game_watch_time_table;')
     cur.execute('drop table if exists streamer_watch_time_table;')
@@ -48,15 +64,13 @@ def updateYesterdayTables(cur):
     create_watch_time = '''
                 create table watch_time_table as
                 (select game_id, game_name, user_id, user_name, thumbnail_url, 
-                TO_CHAR(watch_time, \'fm999G999D99\') as watch_time_pretty,
-                watch_time as watch_time
+                watch_time
                 from watch_time_staging);
                 '''
 
     create_game = '''
                 create table game_watch_time_table as
                 (select game_id, game_name, 
-                TO_CHAR(sum(watch_time), \'fm999G999D99\') as watch_time_pretty,
                 sum(watch_time) as watch_time
                 from watch_time_staging
                 group by 1, 2);
@@ -64,8 +78,7 @@ def updateYesterdayTables(cur):
 
     create_streamer = '''
                 create table streamer_watch_time_table as
-                (select user_id, user_name, max(thumbnail_url),
-                TO_CHAR(sum(watch_time), \'fm999G999D99\') as watch_time_pretty,
+                (select user_id, user_name,
                 sum(watch_time) as watch_time
                 from watch_time_staging
                 group by 1, 2);

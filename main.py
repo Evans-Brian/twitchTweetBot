@@ -1,11 +1,18 @@
 import psycopg2 as pg2
 from sqlalchemy import create_engine
-from helperFunctions.twitchAPI import twitchAPIHeaders, getStreamData, descriptionTesting
+from helperFunctions.twitterAPI import tweetTopGames, tweetTopStreamers, respondToTweet, tweetRandomGame
+from helperFunctions.twitchAPI import twitchAPIHeaders, getStreamData
 from helperFunctions.updateTables import updateStagingTables, createStagingTables, updateYesterdayTables
 from helperFunctions.secretsManagement import get_secret
 from datetime import datetime, time
 
+# logging for exceptions
+logf = open("storage/myapp.log", "a")
 
+# time used to trigger specific actions, like updating yesterdays tables and sending tweets
+now = datetime.utcnow().time()
+
+# credentials
 client_id = get_secret('twitch/client_id')
 client_secret = get_secret('twitch/client_secret')
 password = get_secret('db/password')
@@ -16,20 +23,49 @@ cur = conn.cursor()
 engine = create_engine(
     f'postgresql+psycopg2://postgres:{password}@localhost:5432/twitch')
 
+# headers to connect to Twitch API
 headers = twitchAPIHeaders(client_id, client_secret)
 
+# pulls data from the Twitch API for all streamers with over n viewers
 stream_df = getStreamData(headers, 200)
-
 stream_df.to_sql('stream_data_staging', engine, if_exists='replace')
 
+logf.write(f'{now} 1\n')
 
-now = datetime.utcnow().time()
 # viewership typically bottoms out around 8AM UTC
 # Therefore, we will consider our day starting at 8AM UTC
+
+# if time is near 8AM UTC, delete and replace tables for yesterday's data
+# otherwise update the staging tables
 if time(7, 55) <= now <= time(8, 5):
     createStagingTables(cur)
     updateYesterdayTables(cur)
 else:
     updateStagingTables(cur)
+logf.write(f'{now} 2\n')
 
+# respond to any tagged tweets that haven't already been read
+respondToTweet(conn)
+
+logf.write(f'{now} 3\n')
+
+# if time is near 2PM UTC, tweet metrics for top games, streamers, and a random game
+if time(14, 55) <= now <= time(15, 5):
+
+    try:
+        tweetTopGames(conn)
+    except Exception as e:
+        logf.write(f'tweetTopGames: {now}  {str(e)}\n')
+
+    try:
+        tweetTopStreamers(conn)
+    except Exception as e:
+        logf.write(f'tweetTopStreamers: {now}  {str(e)}\n')
+
+    try:
+        tweetRandomGame(conn)
+    except Exception as e:
+        logf.write(f'tweetRandomGame: {now}  {str(e)}\n')
+
+logf.write(f'{now} 4\n')
 conn.commit()

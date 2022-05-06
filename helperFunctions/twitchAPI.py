@@ -3,6 +3,15 @@ import pandas as pd
 
 
 def twitchAPIHeaders(client_id, client_secret):
+    """Generates headers used to connect to Twitch API.
+
+    Args:
+        client_id (string): Twitch client ID.
+        client_secret (string): Twitch client secret.
+
+    Returns:
+        headers(dict): Dict containing client ID and bearer token. Headers are used as an input for requesting data from the Twitch API
+    """
     URL = "https://id.twitch.tv/oauth2/token"
     CLIENT_ID = client_id
     CLIENT_SECRET = client_secret
@@ -27,6 +36,15 @@ def twitchAPIHeaders(client_id, client_secret):
 
 
 def getStreamData(headers, minViewers=50):
+    """Pulls streaming data from Twitch API page by page and appends relevant data to a dataframe.
+
+    Args:
+        headers (string): Client ID and Bearer token used to connect to Twitch API.
+        minViewers (int, optional): After a stream is read with below this number of viewers, API requests will stop.
+
+    Returns:
+        df (dataframe): Dataframe containing data on Twitch streams
+    """
     URL = 'https://api.twitch.tv/helix/streams'
     columns = ['id', 'user_id', 'user_name', 'game_id',
                'game_name', 'viewer_count', 'thumbnail_url']
@@ -56,14 +74,12 @@ def getStreamData(headers, minViewers=50):
                 currViewerCount, stream['data'].pop()['viewer_count'])
             i += 1
 
-    return df
+        return df
 
 
 def descriptionTesting(headers, minViewers=50):
     # seems to require verified email in headers for authentication
-    print(headers)
     URL = 'https://api.twitch.tv/helix/users'
     columns = ['display_name', 'description']
     cursor = None
     stream = requests.get(f'{URL}?first=100', headers=headers).json()
-    print(stream)
