@@ -11,7 +11,7 @@ import psycopg2 as pg2
 # conn = pg2.connect(database='twitch', user='postgres', password=password)
 
 
-def _createClient():
+def createClient():
     """Creates a new client to connect to Twitter API.
 
     Returns:
@@ -28,14 +28,14 @@ def _createClient():
     return client
 
 
-def tweetTopGames(conn, count=5):
+def tweetTopGames(conn, client, count=5):
     """Tweets the top {count} games in order of watch time.
 
     Args:
         conn (connection): Connection to PSQL database
+        client (obj): Client connecting to Twitter API v2.
         count (int, optional): The number of games that will be returned. Defaults to 5.
     """
-    client = _createClient()
     topGamesQuery = '''select game_name, watch_time
                 from game_watch_time_table
                 order by watch_time desc
@@ -53,14 +53,14 @@ def tweetTopGames(conn, count=5):
     client.create_tweet(text=payload)
 
 
-def tweetTopStreamers(conn, count=5):
+def tweetTopStreamers(conn, client, count=5):
     """Tweets the top {count} streamers in order of watch time.
 
     Args:
         conn (connection): Connection to PSQL database
+        client (obj): Client connecting to Twitter API v2.
         count (int, optional): The number of streaners that will be returned. Defaults to 5.
     """
-    client = _createClient()
     topStreamersQuery = '''select user_name, watch_time
                 from streamer_watch_time_table
                 order by watch_time desc
@@ -78,25 +78,25 @@ def tweetTopStreamers(conn, count=5):
     client.create_tweet(text=payload)
 
 
-def respondToTweet(conn):
+def respondToTweet(conn, client):
     """Reads all tweets tagged @TwitchWatchTime. If the tweet text is a game or a streamer,
     respond to the tweet with the top 5 streamers for that game or the top 5 games for that streamer,
     ordered by watch time.  Calls _queryRequest, _sendGameRespone, _sendStreamerRespone.
 
     Args:
         conn (connection): Connection to PSQL database
+        client (obj): Client connecting to Twitter API v2.
     """
-    client = _createClient()
     response = client.search_recent_tweets('@TwitchWatchTime', max_results=100)
     oldTweets = []
 
     with open('storage/tweets_read.txt', 'r') as filehandle:
         for line in filehandle:
             # remove linebreak which is the last character of the string
-            connrentID = line[:-1]
+            currentID = line[:-1]
 
             # add item to the list
-            oldTweets.append(int(connrentID))
+            oldTweets.append(int(currentID))
 
     with open('storage/tweets_read.txt', 'a') as filehandle:
         for tweet in response.data:
@@ -198,7 +198,7 @@ def _sendStreamerRespone(client, text, df, id):
     client.create_tweet(text=payload, in_reply_to_tweet_id=id)
 
 
-def tweetRandomGame(conn, count=5):
+def tweetRandomGame(conn, client, count=5):
     """Tweeets the top 5 streamers and their watch times for a random game. The random game chosen is weighted 
     based on total watch time and is chosen from only the top 1000 most watched games.
 
@@ -206,7 +206,7 @@ def tweetRandomGame(conn, count=5):
         conn (connection): Connection to PSQL database
         count (int, optional): The number of streaners that will be returned. Defaults to 5.
     """
-    client = _createClient()
+
     gameWatchTimeQuery = '''
                     select game_name, watch_time
                     from game_watch_time_table
