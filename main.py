@@ -2,7 +2,7 @@ import psycopg2 as pg2
 from sqlalchemy import create_engine
 from helperFunctions.twitterAPI import tweetTopGames, tweetTopStreamers, respondToTweet, tweetRandomGame, createClient
 from helperFunctions.twitchAPI import twitchAPIHeaders, getStreamData
-from helperFunctions.updateTables import updateStagingTables, createStagingTables, updateYesterdayTables
+from helperFunctions.updateTables import updateStagingTables, createStagingTables, updateYesterdayTables, stagingTableExist
 from helperFunctions.secretsManagement import get_secret
 from datetime import datetime, time
 import os
@@ -16,17 +16,27 @@ logf = open("storage/myapp.log", "a")
 now = datetime.utcnow().time()
 
 # credentials
+
 client_id = get_secret('twitch/client_id')
 client_secret = get_secret('twitch/client_secret')
-password = get_secret('db/password')
+host = os.environ.get("host", "localhost")
+
+db_password = os.environ.get("password")
+if not db_password:
+    db_password = get_secret('db/password')
 
 # connect to Postgres SQL database and create engine
-conn = pg2.connect(database='twitch', user='postgres', password=password)
-cur = conn.cursor()
+conn = pg2.connect(host=host, database='twitch',
+                   user='postgres', password=db_password)
+
+
 engine = create_engine(
-    f'postgresql+psycopg2://postgres:{password}@localhost:5432/twitch')
+    f'postgresql+psycopg2://postgres:{db_password}@{host}:5432/twitch')
+
+cur = conn.cursor()
 
 # headers to connect to Twitch API
+
 headers = twitchAPIHeaders(client_id, client_secret)
 
 # client to connect to Twitter API
@@ -37,10 +47,11 @@ stream_df = getStreamData(headers, 50)
 stream_df.to_sql('stream_data_staging', engine, if_exists='replace')
 
 
-logf.write(f'{now} 1\n')
-
 # viewership typically bottoms out around 8AM UTC
 # Therefore, we will consider our day starting at 8AM UTC
+
+if not stagingTableExist(cur):
+    createStagingTables(cur)
 
 # if time is between 7:55 AM UTC and 8:05 AM UTC, delete and replace tables for yesterday's data
 # otherwise update the staging tables
@@ -49,16 +60,13 @@ if time(7, 55) <= now <= time(8, 5):
     updateYesterdayTables(cur)
 else:
     updateStagingTables(cur)
-logf.write(f'{now} 2\n')
 
 # respond to any tagged tweets that haven't already been read
 respondToTweet(conn, client)
 
-logf.write(f'{now} 3\n')
-
 # if time is near 2PM UTC, tweet metrics for top games, streamers, and a random game
 if time(14, 55) <= now <= time(15, 5):
-
+    updateYesterdayTables(cur)
     try:
         tweetTopGames(conn, client)
     except Exception as e:
@@ -74,5 +82,5 @@ if time(14, 55) <= now <= time(15, 5):
     except Exception as e:
         logf.write(f'tweetRandomGame: {now}  {str(e)}\n')
 
-logf.write(f'{now} 4\n')
+logf.write(f'{now} complete\n')
 conn.commit()

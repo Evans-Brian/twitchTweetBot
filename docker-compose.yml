@@ -1,0 +1,39 @@
+version: '3'
+services:
+  # will build Dockerfile_db image
+  db:
+    build:
+      context: .
+      dockerfile: Dockerfile_db
+    ports:
+      - "5432"
+
+  # backend:
+  #   # will build Dockerfile_backend image
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile_backend
+  #   volumes:
+  #     - .:/twitterBot
+  #   depends_on:
+  #     - db
+  #   environment:
+  #     - host=db
+  #     - password=docker
+  #   ports:
+  #     - "5431"
+
+  cron:
+    # will build Dockerfile_backend image
+    build:
+      context: .
+      dockerfile: Dockerfile_cron
+    volumes:
+      - .:/twitterBot
+    depends_on:
+      - db
+    environment:
+      - host=db
+      - password=docker
+    ports:
+      - "5430"

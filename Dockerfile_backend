@@ -1,0 +1,23 @@
+FROM python:3.7.10
+
+# set a directory for the app
+WORKDIR /home/ec2-user/twitterBot
+
+RUN pip install --upgrade pip
+
+COPY requirements.txt .
+
+# install dependencies
+RUN pip3 install --no-cache-dir -r requirements.txt
+
+# copy all the files to the container
+COPY . .
+
+ENV AWS_ACCESS_KEY_ID=AKIARC2VSSLXA6GKRVFF
+ENV AWS_SECRET_ACCESS_KEY=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
+ENV AWS_DEFAULT_REGION=us-east-1c
+
+CMD ["python", "./main.py"]
+
+# docker build -f docker/backend/Dockerfile -t evans1947/backend_image .
+# docker run evans1947/backend_image

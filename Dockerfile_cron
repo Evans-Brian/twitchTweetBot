@@ -1,0 +1,31 @@
+# Dockerfile to create image with cron services
+FROM ubuntu:latest
+
+WORKDIR /home/ec2-user/twitterBot
+
+# Add the script to the Docker Image
+COPY . .
+# Give execution rights on the cron scripts
+RUN chmod 0644 /home/ec2-user/twitterBot/main.py
+
+#Install Cron
+RUN apt-get update
+RUN apt-get -y install cron
+
+RUN apt-get install -y python3
+RUN apt-get install -y python3-pip
+RUN pip install --upgrade pip
+
+# install dependencies
+RUN pip3 install --no-cache-dir -r requirements.txt
+
+
+# Add the cron job
+RUN crontab -l | { cat; echo "* * * * * python3 /home/ec2-user/twitterBot/main.py"; } | crontab -
+
+ENV AWS_ACCESS_KEY_ID=AKIARC2VSSLXA6GKRVFF
+ENV AWS_SECRET_ACCESS_KEY=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
+ENV AWS_DEFAULT_REGION=us-east-1c
+
+# Run the command on container startup
+CMD cron

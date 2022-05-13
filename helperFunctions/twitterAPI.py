@@ -102,8 +102,9 @@ def respondToTweet(conn, client):
         for tweet in response.data:
             hashmap = dict(tweet)
 
-            # if tweet ID exists in storage/tweets_read.txt, skip
-            if hashmap['id'] not in oldTweets:
+            # if tweet ID exists in storage/tweets_read.txt or text is a retweet, skip
+            if hashmap['id'] not in oldTweets and 'RT' not in hashmap['text']:
+
                 text, game_df, streamer_df = _queryRequest(
                     hashmap['text'], conn)
 

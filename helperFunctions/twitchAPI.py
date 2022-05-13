@@ -61,7 +61,6 @@ def getStreamData(headers, minViewers=50):
             newChunkDF = pd.json_normalize(stream['data'])[columns]
             df = df.append(newChunkDF)
 
-        # continue until
         try:
             cursor = stream['pagination']['cursor']
         except:

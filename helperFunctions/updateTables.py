@@ -1,3 +1,6 @@
+import pandas as pd
+
+
 def createStagingTables(cur):
     """Deletes previous staging table and creates a new staging table.
 
@@ -8,13 +11,27 @@ def createStagingTables(cur):
 
     create_watch_time = '''create table watch_time_staging as
                 (select game_id, game_name, user_id, user_name, thumbnail_url, 
-                round(sum(viewer_count)/3,0) as watch_time
+                round(sum(viewer_count)/2,0) as watch_time
                 from stream_data_staging
                 group by 1, 2, 3, 4, 5);
                 '''
 
     cur.execute(create_watch_time)
 
+
+def stagingTableExist(cur):
+    """Confirms if watch_time_staging table is in database.  If the length of the 
+    returned query is zero, the table does not exist.
+
+    Args:
+        conn (connection): Connection to PSQL database
+
+    Returns:
+        (boolean): True if watch_time_staging exists in database. False otherwise
+    """
+    cur.execute('select exists(select relname from pg_class where relname=\'watchtime_staging\')')
+    exists = cur.fetchone()[0]
+    return exists
 
 def updateStagingTables(cur):
     """Updates staging table with data from the most recent Twitch API request. Data is appended and then grouped.
@@ -25,7 +42,7 @@ def updateStagingTables(cur):
     insert_watch_time = '''
                 insert into watch_time_staging
                 (select game_id, game_name, user_id, user_name, thumbnail_url, 
-                round(sum(viewer_count)/3,0) as watch_time
+                round(sum(viewer_count)/2,0) as watch_time
                 from stream_data_staging
                 group by 1, 2, 3, 4, 5);
                 '''
