@@ -24,10 +24,11 @@ services:
   #     - "5431"
 
   cron:
-    # will build Dockerfile_backend image
+    # will build Dockerfile_cron image. Used to automate script execution, built on ubuntu image
     build:
       context: .
       dockerfile: Dockerfile_cron
+    tty: true
     volumes:
       - .:/twitterBot
     depends_on:

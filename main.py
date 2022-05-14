@@ -66,7 +66,6 @@ respondToTweet(conn, client)
 
 # if time is near 2PM UTC, tweet metrics for top games, streamers, and a random game
 if time(14, 55) <= now <= time(15, 5):
-    updateYesterdayTables(cur)
     try:
         tweetTopGames(conn, client)
     except Exception as e:

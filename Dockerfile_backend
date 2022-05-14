@@ -13,8 +13,8 @@ RUN pip3 install --no-cache-dir -r requirements.txt
 # copy all the files to the container
 COPY . .
 
-ENV AWS_ACCESS_KEY_ID=AKIARC2VSSLXA6GKRVFF
-ENV AWS_SECRET_ACCESS_KEY=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
+ENV AWS_ACCESS_KEY_ID=
+ENV AWS_SECRET_ACCESS_KEY=
 ENV AWS_DEFAULT_REGION=us-east-1c
 
 CMD ["python", "./main.py"]
