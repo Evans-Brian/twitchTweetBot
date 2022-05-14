@@ -4,10 +4,10 @@ I created a <a href="https://twitter.com/TwitchWatchTime" target="_blank">Twitte
 
 You can see the bot in action <a href="https://twitter.com/TwitchWatchTime" target="_blank">here</a>.
 
-#### Data Sourcing and Storage
+### Data Sourcing and Storage
 Every 30 minutes script requests data from the <a href="https://www.google.com/" target="_blank">Twitch API</a> on viewer count and game name for all streamers who have over 50 viewers. After pulling the data, the script writes it to a series of staging tables in the PSQL database. Functions for reading and writing data from the Twitch API may be found in *helperfunctions/twitchAPI.py* and *helperfunctions/updateTables.py*.
 
-#### Sending Tweets
+### Sending Tweets
 Each day at 8AM PTC, the bot will write the data stored in the staging tables to a series of permenant tables containing data for the past 24 hours. Because Twitch is a global platform, there is no defined start and end of each day. I analyzed Twitch viewership and learned it bottoms out each day at around 8AM PTC, which is why I determined each day will end at 8AM. Functions for writing data to the permenant tables may be found in *helperfunctions/updateTables.py*. 
 
 Each day at 2PM PTC, the bot will tweet out the yesterday's viewing hours top 5 games, streamers, and top 5 streamers for a random game. View time is estimated and likely to be slightly high- because we pull data every 30 minutes, each view represents 30 minutes of view time. The random game tweeted is weighted on total game view time.
@@ -21,8 +21,6 @@ image
 
 ## Installation and Setup Instructions
 
-#### Example:  
-
 Because I've containerized this app using Docker, users may easily run it within the project's container. 
 
 To install Docker:
@@ -32,7 +30,9 @@ To install Docker:
 
 Users must also install Docker Compose:
 `sudo curl -L "https://github.com/docker/compose/releases/download/1.26.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose`
+
 `sudo mv /usr/local/bin/docker-compose /usr/bin/docker-compose`
+
 `sudo chmod +x /usr/bin/docker-compose`
 
 
