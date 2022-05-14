@@ -30,6 +30,12 @@ To install Docker:
 `sudo yum update -y`  
 `sudo yum install docker -y` 
 
+Users must also install Docker Compose:
+`sudo curl -L "https://github.com/docker/compose/releases/download/1.26.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose`
+`sudo mv /usr/local/bin/docker-compose /usr/bin/docker-compose`
+`sudo chmod +x /usr/bin/docker-compose`
+
+
 To start Docker:
 
 `sudo service docker start`  
@@ -49,24 +55,21 @@ I created this side project to explore technologies that I had minimal experienc
 4. Database integration
 
 ### EC2
-I had no experience hosting a project on EC2, but it was clearly the optimal solution for this use case. Because this bot runs 24/7, using my personal computer was not feasible. I deliberated over what instance size to use, but decided to go with AWS's limited free use t2.micro instance. The compute power required for the bot is minimal, but more storage would be useful for allowing users to query the bot for time periods beyond 1 day. I could've also used AWS's RDS service for my database, but decided this was beyon the scope of the project.
-
+I had no experience hosting a project on EC2, but it was clearly the optimal solution for this use case. Because this bot runs 24/7, using my personal computer was not feasible. I deliberated over what instance size to use, but decided to go with AWS's limited free use t2.micro instance. The compute power required for the bot is minimal, but more storage would be useful for allowing users to query the bot for time periods beyond 1 day. I could've also used AWS's RDS service for my database, but decided this was beyond the scope of the project.
+ 
 Beyond storage space, the t2.micro compute power became an issue when SSHing in through VS Code and while performing code changes when testing. Spikes in compute would often use all my CPU credits, leading to a crash. I found the quickest way to restore the SSH connection was to reboot the instance.
+ 
+I used AWS Secrets Manager to store credentials. I've used many different tools for credentials storage, but found Secrets Manager useful for its ability to share credentials across different AWS services.
 
-I used AWS Secrets Manager to store credntials. I've used many different tools for credentials storage, but found Secrets Manager useful for it's ability to share credentials across different AWS services.
+### Docker
+While it's unlikely anyone else will ever work on this project, I wanted to containerize it to learn more about Docker. Because this project required multiple images (Postgres and Ubuntu), I needed to user a *docker-compose.yml* file.  Docker Compose is a tool created to help define and share multi-container applications.  The Postgres image was an easy choice for the app's database, but Ubuntu was chosen so I could run the Python file using a Cron job within the container. Because the script requires env variables (AWS credentials and DB host) to run and Cron can not easily access env variables, I wrote *entrypoint.sh* to move the env variables to *etc/environment* where they can be accessed by Cron. 
 
-### EC2
+### APIs
+I've worked with APIs several times in the past, but more experience never hurts. The Twitch API was fairly easy to use, but only allowed querying Twitch data for the current time. This is what led to the design decision of creating a database. Because I couldn't get past data with the API, I requested the API in 30 minutes intervals and wrote the payload to the database.
+ 
+The Twitter API was fairly simple to work with. My biggest frustration was due to their recent transition from V1 of the API to V2. This made it difficult to find accurate documentation on V2 - many sources were referencing V1 calls without stating the version.
 
-### EC2
-
-### EC2
-
-#### Example:  
-
-This was a 3 week long project built during my third module at Turing School of Software and Design. Project goals included using technologies learned up until this point and familiarizing myself with documentation for new features.  
-
-Originally I wanted to build an application that allowed users to pull data from the Twitter API based on what they were interested in, such as 'most tagged users'. I started this process by using the `create-react-app` boilerplate, then adding `react-router-4.0` and `redux`.  
-
-One of the main challenges I ran into was Authentication. This lead me to spend a few days on a research spike into OAuth, Auth0, and two-factor authentication using Firebase or other third parties. Due to project time constraints, I had to table authentication and focus more on data visualization from parts of the API that weren't restricted to authenticated users.
-
-At the end of the day, the technologies implemented in this project are React, React-Router 4.0, Redux, LoDash, D3, and a significant amount of VanillaJS, JSX, and CSS. I chose to use the `create-react-app` boilerplate to minimize initial setup and invest more time in diving into weird technological rabbit holes. In the next iteration I plan on handrolling a `webpack.config.js` file to more fully understand the build process.
+### Database integration
+I have significant experience working with and querying databases, but I haven't created one in a few years. Installing a PSQL and setting up a database were both relatively simple tasks. The only significant issue I ran into was accessing the database with the Python package *psycopg2* from within a container.
+ 
+*psycopg2* function *pg2.connect()* takes an optional host argument to connect to your database. If not specified, it defaults to localhost. When running with Docker, the PostgresSQL Image database host address is set to the name of the image (ex: *db*), **not localhost**. Therefore, I had to set and env variable equal to the host named *db* so *pg2.connect()* could connect to the database within the Docker container.
