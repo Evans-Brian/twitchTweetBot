@@ -1,11 +1,11 @@
-## Twitch Watch Time Twitter Bot
+## Twitch Stream Watch Time Twitter Bot
 
 I created a <a href="https://twitter.com/TwitchWatchTime" target="_blank">Twitter bot</a> that tweets daily watch time in hours for a variety of games and streamers. The bot will tweet yesterday's total watch time in hours for the top 5 streamers, games, and top 5 streamers of a random game. Twitter users may also query the data by tagging the bot (@TwitchWatchTime) in a Tweet containing a game or streamer name. The bot runs on a t2.micro EC2 instance.  It's containerized with Docker, so collaborators may easily run the bot on their own.  
 
 You can see the bot in action <a href="https://twitter.com/TwitchWatchTime" target="_blank">here</a>.
 
 ### Data Sourcing and Storage
-Every 30 minutes script requests data from the <a href="https://www.google.com/" target="_blank">Twitch API</a> on viewer count and game name for all streamers who have over 50 viewers. After pulling the data, the script writes it to a series of staging tables in the PSQL database. Functions for reading and writing data from the Twitch API may be found in *helperfunctions/twitchAPI.py* and *helperfunctions/updateTables.py*.
+Every 30 minutes script requests data from the <a href="https://dev.twitch.tv/docs/api/ target="_blank">Twitch API</a> on viewer count and game name for all streamers who have over 50 viewers. After pulling the data, the script writes it to a series of staging tables in the PSQL database. Functions for reading and writing data from the Twitch API may be found in *helperfunctions/twitchAPI.py* and *helperfunctions/updateTables.py*.
 
 ### Sending Tweets
 Each day at 8AM PTC, the bot will write the data stored in the staging tables to a series of permenant tables containing data for the past 24 hours. Because Twitch is a global platform, there is no defined start and end of each day. I analyzed Twitch viewership and learned it bottoms out each day at around 8AM PTC, which is why I determined each day will end at 8AM. Functions for writing data to the permenant tables may be found in *helperfunctions/updateTables.py*. 
@@ -17,6 +17,8 @@ image
 
 Additionally, users may tag the bot in a Tweet containing a game name or streamer name. If the name is found in the database, the bot will respond to that user with the top 5 streamers for that game or the top 5 games for that streamer.
 image
+
+Note: Tweet responses are sent every 30 minutes. The cadence could be improved by adding the tweet response code to a file separate from *main.py* and running that file with Cron more frequently. A web hook could also be used for instantaneous response.
 
 
 ## Installation and Setup Instructions
@@ -72,4 +74,4 @@ The Twitter API was fairly simple to work with. My biggest frustration was due t
 ### Database integration
 I have significant experience working with and querying databases, but I haven't created one in a few years. Installing a PSQL and setting up a database were both relatively simple tasks. The only significant issue I ran into was accessing the database with the Python package *psycopg2* from within a container.
  
-*psycopg2* function *pg2.connect()* takes an optional host argument to connect to your database. If not specified, it defaults to localhost. When running with Docker, the PostgresSQL Image database host address is set to the name of the image (ex: *db*), **not localhost**. Therefore, I had to set and env variable equal to the host named *db* so *pg2.connect()* could connect to the database within the Docker container.
+*psycopg2* function *pg2.connect()* takes an optional host argument to connect to your database. If not specified, it defaults to localhost. When running with Docker, the PostgresSQL Image database host address is set to the name of the image (ex: *db*), **not localhost**. Therefore, I had to set and env variable equal to the host with value *db* so *pg2.connect()* could connect to the database within the Docker container.
