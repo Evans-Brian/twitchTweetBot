@@ -90,6 +90,10 @@ def respondToTweet(conn, client):
     response = client.search_recent_tweets('@TwitchWatchTime', max_results=100)
     oldTweets = []
 
+    # exit if there are no responses
+    if not response.data:
+        return
+
     with open('storage/tweets_read.txt', 'r') as filehandle:
         for line in filehandle:
             # remove linebreak which is the last character of the string

@@ -46,7 +46,7 @@ To compose the container, built from a Postgres image and Ubuntu image:
 
 `docker-compose up`  
 
-This app contains many API keys and secrets. To store these credentials safely, I used AWS Secrets Manager. Users will need to update API credential references. If they wish to use AWS Secrets Manager, they need to update the AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY env variables found in the Dockerfiles. 
+This app contains many API keys and secrets. To store these credentials safely, I used AWS Secrets Manager. Users will need to update API credential references. If they wish to use AWS Secrets Manager, they need to update the *AWS_ACCESS_KEY_ID* and *AWS_SECRET_ACCESS_KEY* env variables found in the Dockerfiles. 
 
 ## Reflection
 
