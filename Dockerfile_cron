@@ -26,8 +26,8 @@ RUN pip3 install --no-cache-dir -r requirements.txt
 RUN crontab -l | { cat; echo "*/30 * * * * python3 /home/ec2-user/twitterBot/main.py"; } | crontab -
 
 #input or pull AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY for AWS account from secrets
-ENV AWS_ACCESS_KEY_ID={}
-ENV AWS_SECRET_ACCESS_KEY={}
+ENV AWS_ACCESS_KEY_ID=
+ENV AWS_SECRET_ACCESS_KEY=
 ENV AWS_DEFAULT_REGION=us-east-1c
 ENV password=Docker
 ENV image=db

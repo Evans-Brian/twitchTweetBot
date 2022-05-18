@@ -29,9 +29,12 @@ def stagingTableExist(cur):
     Returns:
         (boolean): True if watch_time_staging exists in database. False otherwise
     """
-    cur.execute('select exists(select relname from pg_class where relname=\'watchtime_staging\')')
+    cur.execute(
+        'select exists(select relname from pg_class where relname=\'watch_time_staging\')')
+
     exists = cur.fetchone()[0]
     return exists
+
 
 def updateStagingTables(cur):
     """Updates staging table with data from the most recent Twitch API request. Data is appended and then grouped.

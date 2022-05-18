@@ -51,6 +51,7 @@ stream_df.to_sql('stream_data_staging', engine, if_exists='replace')
 # Therefore, we will consider our day starting at 8AM UTC
 
 if not stagingTableExist(cur):
+    print('test')
     createStagingTables(cur)
 
 # if time is between 7:55 AM UTC and 8:05 AM UTC, delete and replace tables for yesterday's data
