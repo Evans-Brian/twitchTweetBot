@@ -19,7 +19,7 @@ Each day at 2PM PTC, the bot will tweet out the yesterday's viewing hours top 5 
 Additionally, users may tag the bot in a Tweet containing a game name or streamer name. If the name is found in the database, the bot will respond to that user with the top 5 streamers for that game or the top 5 games for that streamer.
 image
 
-<img src="images/game_response.png" width="450" >
+<img src="images/game_response.png" width="500" >
 
 Note: Tweet responses are sent every 30 minutes. The cadence could be improved by adding the tweet response code to a file separate from *main.py* and running that file with Cron more frequently. A web hook could also be used for instantaneous response.
 
