@@ -11,12 +11,14 @@ Every 30 minutes script requests data from the <a href="https://dev.twitch.tv/do
 Each day at 8AM PTC, the bot will write the data stored in the staging tables to a series of permenant tables containing data for the past 24 hours. Because Twitch is a global platform, there is no defined start and end of each day. I analyzed Twitch viewership and learned it bottoms out each day at around 8AM PTC, which is why I determined each day will end at 8AM. Functions for writing data to the permenant tables may be found in *helperfunctions/updateTables.py*. 
 
 Each day at 2PM PTC, the bot will tweet out the yesterday's viewing hours top 5 games, streamers, and top 5 streamers for a random game. View time is estimated and likely to be slightly high- because we pull data every 30 minutes, each view represents 30 minutes of view time. The random game tweeted is weighted on total game view time.
-image
-image
-image
+![](images/most_watched_games.png)
+![](images/most_watched_streamers.png)
+![](images/random_game.png)
 
 Additionally, users may tag the bot in a Tweet containing a game name or streamer name. If the name is found in the database, the bot will respond to that user with the top 5 streamers for that game or the top 5 games for that streamer.
 image
+
+![](images/game_response.png)
 
 Note: Tweet responses are sent every 30 minutes. The cadence could be improved by adding the tweet response code to a file separate from *main.py* and running that file with Cron more frequently. A web hook could also be used for instantaneous response.
 
