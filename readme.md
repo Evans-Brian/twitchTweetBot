@@ -76,7 +76,7 @@ I've worked with APIs several times in the past, but more experience never hurts
  
 The Twitter API was fairly simple to work with. My biggest frustration was due to their recent transition from V1 of the API to V2. This made it difficult to find accurate documentation on V2 - many sources were referencing V1 calls without stating the version.
 
-### Database integration
+### Database Integration
 I have significant experience working with and querying databases, but I haven't created one in a few years. Installing a PSQL and setting up a database were both relatively simple tasks. The only significant issue I ran into was accessing the database with the Python package *psycopg2* from within a container.
  
 *psycopg2* function *pg2.connect()* takes an optional host argument to connect to your database. If not specified, it defaults to localhost. When running with Docker, the PostgresSQL Image database host address is set to the name of the image (ex: *db*), **not localhost**. Therefore, I had to set and env variable equal to the host with value *db* so *pg2.connect()* could connect to the database within the Docker container.
