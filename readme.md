@@ -12,9 +12,9 @@ Each day at 8AM PTC, the bot will write the data stored in the staging tables to
 
 Each day at 2PM PTC, the bot will tweet out the yesterday's viewing hours top 5 games, streamers, and top 5 streamers for a random game. View time is estimated and likely to be slightly high- because we pull data every 30 minutes, each view represents 30 minutes of view time. The random game tweeted is weighted on total game view time.
 
-<img src="images/most_watched_games.png" width="450" >
-<img src="images/most_watched_streamers.png" width="450" >
-<img src="images/random_game.png" width="450" >
+<img src="images/most_watched_games.png" width="400" >
+<img src="images/most_watched_streamers.png" width="400" >
+<img src="images/random_game.png" width="400" >
 
 Additionally, users may tag the bot in a Tweet containing a game name or streamer name. If the name is found in the database, the bot will respond to that user with the top 5 streamers for that game or the top 5 games for that streamer.
 image
