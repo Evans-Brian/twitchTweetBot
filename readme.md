@@ -2,7 +2,7 @@
 
 I created a <a href="https://twitter.com/TwitchWatchTime" target="_blank">Twitter bot</a> that tweets daily watch time in hours for a variety of games and streamers. The bot will tweet yesterday's total watch time in hours for the top 5 streamers, games, and top 5 streamers of a random game. Twitter users may also query the data by tagging the bot (@TwitchWatchTime) in a Tweet containing a game or streamer name. The bot runs on a t2.micro EC2 instance.  It's containerized with Docker, so collaborators may easily run the bot on their own.  
 
-You can see the bot in action <a href="https://twitter.com/TwitchWatchTime" target="_blank">here</a>.
+You can see the bot in action <a href="https://twitter.com/TwitchWatchTime">here</a>.
 
 ### Data Sourcing and Storage
 Every 30 minutes script requests data from the <a href="https://dev.twitch.tv/docs/api/>Twitch API</a> on viewer count and game name for all streamers who have over 50 viewers. After pulling the data, the script writes it to a series of staging tables in the PSQL database. Functions for reading and writing data from the Twitch API may be found in *helperfunctions/twitchAPI.py* and *helperfunctions/updateTables.py*.
