@@ -4,7 +4,7 @@ I created a <a href="https://twitter.com/TwitchWatchTime" target="_blank">Twitte
 
 You can see the bot in action <a href="https://twitter.com/TwitchWatchTime" target="_blank">here</a>.  
 
-**Note:** Unfortunately, my AWS account was hacked and the bot isn't currently up and running. A lesson on security! Don't expose your keys.
+**Note:** Unfortunately, my AWS account was recently hacked and the bot isn't currently up and running. A lesson on security! Don't expose your keys.
 
 ### Data Sourcing and Storage
 Every 30 minutes script requests data from the <a href="https://dev.twitch.tv/docs/api/" target="_blank">Twitch API</a> on viewer count and game name for all streamers who have over 50 viewers. After pulling the data, the script writes it to a series of staging tables in the PSQL database. Functions for reading and writing data from the Twitch API may be found in *helperfunctions/twitchAPI.py* and *helperfunctions/updateTables.py*.
