@@ -5,7 +5,7 @@ I created a <a href="https://twitter.com/TwitchWatchTime" target="_blank">Twitte
 You can see the bot in action <a href="https://twitter.com/TwitchWatchTime" target="_blank">here</a>.
 
 ### Data Sourcing and Storage
-Every 30 minutes script requests data from the <a href="https://dev.twitch.tv/docs/api/ target="_blank">Twitch API</a> on viewer count and game name for all streamers who have over 50 viewers. After pulling the data, the script writes it to a series of staging tables in the PSQL database. Functions for reading and writing data from the Twitch API may be found in *helperfunctions/twitchAPI.py* and *helperfunctions/updateTables.py*.
+Every 30 minutes script requests data from the <a href="https://dev.twitch.tv/docs/api/>Twitch API</a> on viewer count and game name for all streamers who have over 50 viewers. After pulling the data, the script writes it to a series of staging tables in the PSQL database. Functions for reading and writing data from the Twitch API may be found in *helperfunctions/twitchAPI.py* and *helperfunctions/updateTables.py*.
 
 ### Sending Tweets
 Each day at 8AM PTC, the bot will write the data stored in the staging tables to a series of permenant tables containing data for the past 24 hours. Because Twitch is a global platform, there is no defined start and end of each day. I analyzed Twitch viewership and learned it bottoms out each day at around 8AM PTC, which is why I determined each day will end at 8AM. Functions for writing data to the permenant tables may be found in *helperfunctions/updateTables.py*. 
